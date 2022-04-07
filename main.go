@@ -27,8 +27,8 @@ func main() {
 	routes.FoodRoutes(router)
 	routes.MenuRoutes(router)
 	routes.TableRoutes(router)
-	routes.OtherRoutes(router)
-	routes.OtherItemRoutes(router)
+	routes.OrderRoutes(router)
+	routes.OrderItemRoutes(router)
 	routes.InvoiceRoutes(router)
 
 	router.Run(":" + port)
