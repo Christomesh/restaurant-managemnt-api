@@ -40,28 +40,28 @@ func GetFoods() gin.HandlerFunc {
 		startIndex, err = strconv.Atoi(c.Query("startIndex"))
 
 		matchStage := bson.D{{"$match", bson.D{{}}}}
-		groupStage := bson.D{{"$group", bson.D{{"_id", bson.D{{"_id","null"}}},{"total_count", bson.D{{"$sum",1}}},{"$data", bson.D{{"$push", "$ROOT"}}} }}}
+		groupStage := bson.D{{"$group", bson.D{{"_id", bson.D{{"_id", "null"}}}, {"total_count", bson.D{{"$sum", 1}}}, {"$data", bson.D{{"$push", "$ROOT"}}}}}}
 		projectStage := bson.D{
 			{
 				"$project", bson.D{
 					{"_id", 0},
 					{"total_count", 1},
-					{"food_item", bson.D{{"$slice",[]interface{}{"$data", startIndex, recordPerPage}}}},
+					{"food_item", bson.D{{"$slice", []interface{}{"$data", startIndex, recordPerPage}}}},
 				},
 			},
 		}
 
 		result, err := foodCollection.Aggregate(ctx, mongo.Pipeline{
-			matchSatge, groupStage, projectStage,
+			matchStage, groupStage, projectStage,
 		})
 		defer cancel()
-		if err != nil{
-			c.JSON(http.StatusInternalServerError, gin.h{"error":"error occuredwhile listing foods"})
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "error occuredwhile listing foods"})
 		}
 
 		var allFoods []bson.M
 
-		if err = result.All(ctx, &allFoods); err != nil{
+		if err = result.All(ctx, &allFoods); err != nil {
 			log.Fatal(err)
 		}
 		c.JSON(http.StatusOK, allFoods[0])
@@ -126,59 +126,57 @@ func CreateFood() gin.HandlerFunc {
 }
 
 func round(num float64) int {
-	return int (num + math.Copysign(0.5, num))
+	return int(num + math.Copysign(0.5, num))
 }
 
 func toFixed(num float64, precision int) float64 {
 	output := math.Pow(10, float64(precision))
-	return float64(round(num*output))/output
+	return float64(round(num*output)) / output
 }
 
 func UpdateFood() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second))
+		var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
 		var menu models.Menu
 		var food models.Food
 
-
 		foodId := c.Param("food_id")
-		if err := c.BindJSON(&food); err != nil{
-			c.JSON(http.StatusBadRequest, gin.H{"error":err.Error()})
+		if err := c.BindJSON(&food); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
 
 		var updateObj primitive.D
 
-		if food.Name != nil{
+		if food.Name != nil {
 			updateObj = append(updateObj, bson.E{"name", food.Name})
 
 		}
-		
-		if food.Price != nil{
+
+		if food.Price != nil {
 			updateObj = append(updateObj, bson.E{"price", food.Price})
 		}
 
-		food.Food_image != nil{
-			updateObj = append(updateObj, bson.E{"food_image", food.Food_image})			
+		if food.Food_image != nil {
+			updateObj = append(updateObj, bson.E{"food_image", food.Food_image})
 		}
 
-		if food.Menu_id !=nil {
+		if food.Menu_id != nil {
 			msg := fmt.Sprintf("message:Menu was not found")
-			err := menuCollection.FindOne(ctx, bson.M{"menu_id":food.Menu_id}).Decode(&menu)
+			err := menuCollection.FindOne(ctx, bson.M{"menu_id": food.Menu_id}).Decode(&menu)
 			defer cancel()
-			if err != nil{
-				c.JSON(http.StatusInternalServerError, gin.H{"error":msg})
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": msg})
 				return
 			}
 			updateObj = append(updateObj, bson.E{"menu", food.Price})
 		}
 
 		food.Updated_at, _ = time.Parse(time.RFC3339, time.Now().Format(time.RFC3339))
-		updateObj = append(updateObj, bso.E{"update_at", food.Updated_at})
-
+		updateObj = append(updateObj, bson.E{"update_at", food.Updated_at})
 
 		uspsert := true
-		filter := bson.M{"food_id":foodID}
+		filter := bson.M{"food_id": foodId}
 
 		opt := options.UpdateOptions{
 			Upsert: &uspsert,
@@ -187,12 +185,12 @@ func UpdateFood() gin.HandlerFunc {
 			ctx,
 			filter,
 			bson.D{
-				{"$set", updateObj}
+				{"$set", updateObj},
 			},
 			&opt,
 		)
-		if err != nil{
-			msg:= fmt.Sprint("foot item update failed")
+		if err != nil {
+			msg := fmt.Sprint("foot item update failed")
 			c.JSON(http.StatusInternalServerError, gin.H{"error": msg})
 			return
 		}
