@@ -24,7 +24,7 @@ func GetMenus() gin.HandlerFunc {
 		result, err := menuCollection.Find(context.TODO(), bson.M{})
 		defer cancel()
 		if err != nil {
-			msg := fmt.Sprintf("error occured while listing the menun item")
+			msg := fmt.Sprintf("error occured while listing the menu item")
 			c.JSON(http.StatusInternalServerError, gin.H{"error": msg})
 		}
 		var allMenus []bson.M
