@@ -122,7 +122,8 @@ func SignUp() gin.HandlerFunc {
 		user.ID = primitive.NewObjectID()
 		user.User_id = user.ID.Hex()
 		//generate token and refresh token
-		token, refreshToken := helper.GenerateAllToken(*user.Email, *user.First_name, *user.Last_name, *&user.User_id)
+
+		token, refreshToken, _ := helper.GenerateAllToken(*user.Email, *user.First_name, *user.Last_name, user.User_id)
 		user.Token = &token
 		user.Refresh_token = &refreshToken
 		// if all ok, rhen insert this new user into the usercollection
@@ -162,7 +163,7 @@ func Login() gin.HandlerFunc {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": msg})
 		}
 		//if all goes well then generate tokens
-		token, refreshToken := helper.GenerateAllToken(*&foundUser.Email, *&foundUser.First_name, *&foundUser.Last_name)
+		token, refreshToken, _ := helper.GenerateAllToken(*foundUser.Email, *foundUser.First_name, *foundUser.Last_name, foundUser.User_id)
 
 		// update tokens - token and refresh token
 		helper.UpdateAllTokens(token, refreshToken, foundUser.User_id)
