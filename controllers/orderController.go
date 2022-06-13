@@ -12,10 +12,11 @@ import (
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-var orderCollection = database.OpenCollection(database.Client, "order")
+var orderCollection *mongo.Collection = database.OpenCollection(database.Client, "order")
 
 func GetOrders() gin.HandlerFunc {
 	return func(c *gin.Context) {

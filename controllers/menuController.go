@@ -99,8 +99,8 @@ func UpdateMenu() gin.HandlerFunc {
 
 		var updatedObj primitive.D
 
-		if menu.Start_Date != nil && menu.End_Date != nil {
-			if !inTimeSpan(*menu.Start_Date, *menu.End_Date, time.Now()) {
+		if &menu.Start_Date != nil && &menu.End_Date != nil {
+			if !inTimeSpan(menu.Start_Date, menu.End_Date, time.Now()) {
 				msg := "kindly retype the time"
 				c.JSON(http.StatusInternalServerError, gin.H{"error": msg})
 				defer cancel()
