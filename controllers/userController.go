@@ -151,7 +151,7 @@ func Login() gin.HandlerFunc {
 			return
 		}
 		// find a user with that email and see if that user even exits
-		err := userCollection.FindOne(ctx, bson.M{"email": user.Email})
+		err := userCollection.FindOne(ctx, bson.M{"email": user.Email}).Decode(&foundUser)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "user not found"})
 			return
